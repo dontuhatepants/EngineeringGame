@@ -516,7 +516,7 @@ export function renderPitfallLevel(container, levelIndex, opts) {
         <div class="pf-canopy"></div>
         <div class="pf-world" id="pf-world"></div>
         <div class="pf-ground"></div>
-        <div class="pf-touch-hint">👆</div>
+        ${levelIndex === 0 ? '<div class="pf-touch-hint">👆</div>' : ''}
       </div>
     </div>
   `;
