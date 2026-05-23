@@ -936,17 +936,29 @@ export function renderPitfallLevel(container, levelIndex, opts) {
     const pit = isOverPit(state.px);
     const crocPool = isOverCrocPool(state.px);
 
+    // INSTANT-DEATH check FIRST: if the player has dropped to (or below)
+    // ground level while over a pit or open water, they have fallen in.
+    // Without this, the player would only fall briefly before vx carried
+    // them past the pit edge and the next frame's ground check snapped
+    // them back to py=0 — i.e. bouncing out instead of dying.
+    if (pit && state.py <= 0) {
+      die('pit');
+      return;
+    }
+    if (crocPool) {
+      const headCroc = crocHeadAt(crocPool, state.px);
+      if (!headCroc && state.py <= 0) {
+        die('water');
+        return;
+      }
+    }
+
     if (pit) {
-      // No ground over the pit — player keeps falling
+      // Above the pit (mid-jump) — no ground until past it
       groundY = -10000;
     } else if (crocPool) {
-      // Over the pool: ground = top of a closed croc, else water (death)
       const headCroc = crocHeadAt(crocPool, state.px);
-      if (headCroc) {
-        groundY = 40;  // croc head is 40 world units up
-      } else {
-        groundY = -10000;
-      }
+      groundY = headCroc ? 40 : -10000;
     }
 
     if (state.py <= groundY) {
@@ -957,7 +969,8 @@ export function renderPitfallLevel(container, levelIndex, opts) {
       state.grounded = false;
     }
 
-    // Falling out of the world = death
+    // Safety net: falling well out of the world also dies (shouldn't reach
+    // here normally because the instant-death checks above catch the case).
     if (state.py < -200) {
       die('fall');
       return;
