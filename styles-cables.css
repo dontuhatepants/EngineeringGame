@@ -1,0 +1,154 @@
+/* ===== Cables mechanic ===== */
+
+.cables-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.cables-board {
+  position: relative;
+  width: min(100%, 720px);
+  height: min(100%, 600px);
+  background:
+    radial-gradient(ellipse at center, #243447 0%, #15202e 70%, #0e1620 100%);
+  border-radius: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.6),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Left + right wall plates that hold the socket nodes */
+.cables-wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 36px;
+  background: linear-gradient(180deg, #2a3a50 0%, #1a2230 100%);
+  border-right: 3px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.4);
+}
+.cables-wall.left { left: 0; }
+.cables-wall.right {
+  right: 0;
+  border-right: none;
+  border-left: 3px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.4);
+}
+
+/* SVG that draws all the cables. Sits beneath nodes. */
+.cables-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cable-outer {
+  fill: none;
+  stroke: #0a0f17;
+  stroke-width: 18;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+.cable-inner {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+}
+.cable-shine {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+/* Crossing cables flash red-tinged outline */
+.cable-outer.crossing {
+  stroke: #d33;
+  opacity: 0.85;
+}
+
+/* Win state: cables glow */
+.cables-board.won .cable-inner {
+  filter: drop-shadow(0 0 6px currentColor)
+          drop-shadow(0 0 14px currentColor);
+  animation: cableGlow 0.9s ease-in-out infinite alternate;
+}
+@keyframes cableGlow {
+  from { opacity: 1; }
+  to   { opacity: 0.7; }
+}
+
+/* Socket nodes (circular plugs sticking out of wall) */
+.cable-node {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 40%),
+    var(--node-color, #888);
+  border: 4px solid rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.4),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cable-node.draggable {
+  cursor: grab;
+}
+
+.cable-node.draggable::after {
+  /* Inner socket hole */
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.cable-node.fixed::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.cable-node.dragging {
+  transform: translate(-50%, -50%) scale(1.18);
+  cursor: grabbing;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.6),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+}
+
+.cables-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}

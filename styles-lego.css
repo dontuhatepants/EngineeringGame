@@ -1,0 +1,186 @@
+/* ===== Lego Mechanic ===== */
+
+.lego-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.lego-board-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* The 14x14 stud baseplate (420x420 px). */
+.lego-board {
+  position: relative;
+  background-color: #1a2230;
+  /* faint grid: 30px = 1 stud */
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+  border-radius: 14px;
+  border: 4px solid rgba(255,255,255,0.12);
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,0.3),
+    0 8px 18px rgba(0,0,0,0.4);
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+/* Placed and ghost blocks live inside the board, absolutely positioned. */
+.lego-block,
+.lego-ghost {
+  position: absolute;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+}
+.lego-ghost { filter: none; }
+
+/* Ghost visibility modes */
+.lego-ghost.ghost-full   { opacity: 1; }
+.lego-ghost.ghost-faint  { opacity: 0.4; }
+.lego-ghost.ghost-hidden { opacity: 0; transition: opacity 0.18s; }
+.lego-ghost.ghost-revealed { opacity: 0.75; transition: opacity 0.18s; }
+
+/* Arrow indicator for L1-L5 */
+.lego-arrow {
+  position: absolute;
+  pointer-events: none;
+  animation: legoArrowBob 0.7s ease-in-out infinite alternate;
+  z-index: 4;
+}
+@keyframes legoArrowBob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(6px); }
+}
+
+/* Silhouette preview (L16-L20) — sits in top-right corner of board */
+.lego-silhouette {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 100px;
+  background: rgba(0,0,0,0.55);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  padding: 6px 6px 8px;
+  z-index: 20;
+  pointer-events: none;
+}
+.lego-silhouette-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.lego-silhouette-inner {
+  width: 100%;
+  max-height: 90px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tray of candidate blocks */
+.lego-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.32);
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,0.08);
+  justify-content: center;
+  align-items: flex-end;
+  max-width: min(100%, 720px);
+  min-height: 90px;
+}
+
+.lego-tray-block {
+  position: relative;
+  touch-action: none;
+  cursor: grab;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+  transition: transform 0.1s;
+}
+.lego-tray-block:active { cursor: grabbing; }
+.lego-tray-block.dragging {
+  transform: scale(1.05);
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5));
+}
+
+/* Highlight glow for the "right" block when there are no decoys */
+.lego-tray-block.highlight {
+  animation: legoPulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes legoPulse {
+  from { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4))
+                drop-shadow(0 0 4px rgba(255,210,58,0.4)); }
+  to   { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4))
+                drop-shadow(0 0 14px rgba(255,210,58,0.9)); }
+}
+
+/* ===== Finish animations ===== */
+.lego-board.lego-finished {
+  transition: transform 1.2s ease-in-out;
+}
+
+.lego-board.anim-driveRight {
+  animation: legoDriveRight 1.6s ease-in forwards;
+}
+@keyframes legoDriveRight {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(8px) translateY(-4px); }
+  100% { transform: translateX(420px); }
+}
+
+.lego-board.anim-liftOff {
+  animation: legoLiftOff 1.6s ease-in forwards;
+}
+@keyframes legoLiftOff {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(6px); }
+  100% { transform: translateY(-440px); }
+}
+
+.lego-board.anim-bobUpDown {
+  animation: legoBob 0.8s ease-in-out infinite alternate;
+}
+@keyframes legoBob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+
+.lego-board.anim-wagTail {
+  animation: legoWag 0.4s ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+@keyframes legoWag {
+  from { transform: rotate(-3deg); }
+  to   { transform: rotate(3deg); }
+}
+
+.lego-board.anim-spin {
+  animation: legoSpin 2.5s linear infinite;
+}
+@keyframes legoSpin {
+  from { transform: rotate(0); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Responsive: shrink everything a touch on smaller screens */
+@media (max-width: 480px) {
+  .lego-silhouette { width: 80px; }
+  .lego-tray { gap: 10px; padding: 10px; }
+}

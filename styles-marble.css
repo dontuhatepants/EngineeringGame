@@ -1,0 +1,256 @@
+/* ===== Marble Run ===== */
+.marble-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.marble-board {
+  display: grid;
+  gap: 2px;
+  background: #0f1620;
+  padding: 8px;
+  border-radius: 12px;
+  border: 3px solid #2a3a50;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.marble-drop-bar {
+  display: grid;
+  gap: 2px;
+  align-items: end;
+  margin-bottom: 2px;
+}
+.marble-drop-slot {
+  height: clamp(36px, 8vw, 56px);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  position: relative;
+}
+.marble-drop-slot.active {
+  background: linear-gradient(180deg, transparent 0%, rgba(74, 144, 226, 0.18) 100%);
+  border-radius: 6px 6px 0 0;
+}
+.marble-drop-icon {
+  width: 100%;
+  height: 100%;
+  max-width: 56px;
+  max-height: 56px;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+.marble-cell {
+  width: clamp(44px, 11vw, 72px);
+  height: clamp(44px, 11vw, 72px);
+  background: #2a3a50;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.12s, transform 0.1s;
+}
+.marble-cell.empty {
+  background: #2a3a50;
+  background-image:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+}
+.marble-cell.wall {
+  background: #1a2230;
+}
+.marble-cell.wall::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  background: linear-gradient(135deg, #5a4a3a 0%, #3a2e22 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #2a2018;
+}
+.marble-cell.placed {
+  background: #2a3a50;
+  cursor: pointer;
+}
+.marble-cell.placed.fixed {
+  cursor: default;
+}
+.marble-cell.placed.fixed::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.marble-cell.goal {
+  background: linear-gradient(180deg, #4a3e28 0%, #2e2618 100%);
+}
+.marble-cell.hover {
+  background: #3a5a80;
+  box-shadow: inset 0 0 0 3px #4a90e2;
+}
+.marble-cell.hover-bad {
+  box-shadow: inset 0 0 0 3px rgba(220, 70, 70, 0.6);
+}
+
+.marble-piece-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.marble-goal-icon {
+  width: 90%;
+  height: 90%;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+/* ===== Marble ball ===== */
+.marble-ball {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #d4d4d4 30%, #888 80%, #555 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 50;
+  transition: none;
+}
+.marble-ball.marble-fail {
+  animation: marbleShake 0.4s ease-in-out;
+  background: radial-gradient(circle at 35% 30%, #ff8a8a 0%, #d33 60%, #882020 100%);
+}
+@keyframes marbleShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* ===== Controls ===== */
+.marble-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+.marble-btn {
+  min-width: 80px;
+  min-height: 60px;
+  padding: 10px 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #fff;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.marble-btn:active:not(.disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.marble-go {
+  background: linear-gradient(180deg, #6dcf6d 0%, #3e9c3e 100%);
+}
+.marble-reset {
+  background: linear-gradient(180deg, #4a90e2 0%, #2d6cb8 100%);
+  min-width: 60px;
+  padding: 10px 14px;
+}
+.marble-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ===== Tray ===== */
+.marble-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  justify-content: center;
+  align-items: center;
+  max-width: min(100%, 720px);
+  min-height: 88px;
+}
+.marble-tray-item {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  background: #2a3a50;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+  touch-action: none;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, opacity 0.2s;
+}
+.marble-tray-item:active:not(.depleted) { cursor: grabbing; transform: scale(0.95); }
+.marble-tray-item.depleted {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.marble-tray-piece {
+  width: 80%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.marble-tray-piece svg {
+  width: 100%;
+  height: 100%;
+}
+.marble-tray-count {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: #ffd966;
+  color: #1a2230;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 2px solid #1a2230;
+  pointer-events: none;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ===== Drag ghost ===== */
+.marble-ghost {
+  position: fixed;
+  width: 72px;
+  height: 72px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.85;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+  transform: scale(1.05);
+}
+.marble-ghost svg {
+  width: 100%;
+  height: 100%;
+}
