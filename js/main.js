@@ -10,6 +10,7 @@ import { renderLegoLevel, LEGO_LEVELS } from './lego.js';
 import { renderToolboxLevel, TOOLBOX_LEVELS } from './toolbox.js';
 import { renderBridgeLevel, BRIDGE_LEVELS } from './bridge.js';
 import { renderPitfallLevel, PITFALL_LEVELS } from './pitfall.js';
+import { renderFireLevel, FIRE_LEVELS } from './firefighter.js';
 import { sfx, setMuted, isMuted } from './sound.js';
 
 const app = document.getElementById('app');
@@ -44,8 +45,9 @@ const MECHANICS = {
   toolbox:  { name: 'Toolbox',  levels: TOOLBOX_LEVELS,  render: renderToolboxLevel,  icon: toolboxIcon },
   bridge:   { name: 'Bridge',   levels: BRIDGE_LEVELS,   render: renderBridgeLevel,   icon: bridgeIcon },
   pitfall:  { name: 'Jungle',   levels: PITFALL_LEVELS,  render: renderPitfallLevel,  icon: pitfallIcon },
+  firefighter: { name: 'Firefighter', levels: FIRE_LEVELS, render: renderFireLevel, icon: firefighterIcon },
 };
-const MECHANIC_ORDER = ['pipes', 'robot', 'circuits', 'gears', 'marble', 'cables', 'lego', 'toolbox', 'bridge', 'pitfall'];
+const MECHANIC_ORDER = ['pipes', 'robot', 'circuits', 'gears', 'marble', 'cables', 'lego', 'toolbox', 'bridge', 'pitfall', 'firefighter'];
 
 // ---- Progress (localStorage) ----
 const SAVE_KEY = 'fixinggame_v1';
@@ -273,6 +275,36 @@ function pitfallIcon() {
       <rect x="33" y="62" width="10" height="12" fill="#a04a2a" stroke="#3a2008" stroke-width="2"/>
       <rect x="33" y="72" width="4" height="6" fill="#5a3a1f" stroke="#3a2008" stroke-width="2"/>
       <rect x="39" y="72" width="4" height="6" fill="#5a3a1f" stroke="#3a2008" stroke-width="2"/>
+    </svg>
+  `;
+}
+function firefighterIcon() {
+  return `
+    <svg viewBox="0 0 100 100" width="96" height="96">
+      <!-- burning building behind -->
+      <rect x="58" y="38" width="38" height="48" fill="#a07a4a" stroke="#3a2410" stroke-width="2"/>
+      <polygon points="56,38 77,28 98,38" fill="#5a3210" stroke="#1a0a04" stroke-width="2"/>
+      <rect x="66" y="48" width="10" height="12" fill="#88c8e8" stroke="#3a4756" stroke-width="1.5"/>
+      <rect x="80" y="48" width="10" height="12" fill="#88c8e8" stroke="#3a4756" stroke-width="1.5"/>
+      <!-- flame on roof -->
+      <path d="M 77 28 C 72 22 73 14 80 8 C 78 16 84 14 82 6 C 88 12 90 22 86 28 Z"
+            fill="#ff8a30" stroke="#7a1808" stroke-width="1.5"/>
+      <!-- fire truck in foreground -->
+      <rect x="6" y="58" width="40" height="22" rx="3" fill="#d32020" stroke="#5a1010" stroke-width="2"/>
+      <rect x="6" y="64" width="40" height="3" fill="#ffd966"/>
+      <rect x="12" y="48" width="20" height="14" rx="2" fill="#d32020" stroke="#5a1010" stroke-width="2"/>
+      <rect x="16" y="51" width="14" height="8" fill="#9fcfe0" stroke="#1f5a70" stroke-width="1"/>
+      <!-- siren -->
+      <rect x="20" y="44" width="6" height="4" rx="1" fill="#3aa3ff" stroke="#1f5d99" stroke-width="1"/>
+      <!-- ladder on top -->
+      <rect x="6" y="46" width="6" height="4" fill="#888" stroke="#333" stroke-width="1"/>
+      <!-- wheels -->
+      <circle cx="14" cy="82" r="6" fill="#222" stroke="#000" stroke-width="2"/>
+      <circle cx="38" cy="82" r="6" fill="#222" stroke="#000" stroke-width="2"/>
+      <!-- water jet arcing to building -->
+      <path d="M 36 50 Q 52 32 70 44" stroke="#9fdcff" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85"/>
+      <circle cx="68" cy="45" r="2" fill="#9fdcff"/>
+      <circle cx="56" cy="38" r="1.5" fill="#9fdcff"/>
     </svg>
   `;
 }

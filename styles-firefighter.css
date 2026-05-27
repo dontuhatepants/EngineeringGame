@@ -1,0 +1,358 @@
+/* ===== Firefighter mechanic ===== */
+
+.ff-game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.ff-stage {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 9 / 16;
+  max-height: 90vh;
+  background: #1e2a3a;
+  border-radius: 14px;
+  border: 3px solid rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.25),
+    0 8px 22px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+/* ===== Shared banners ===== */
+.ff-phase-banner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffd966;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  font-size: clamp(12px, 2.6vw, 16px);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.ff-arrived {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffd966;
+  font-size: clamp(28px, 7vw, 48px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  animation: ff-arrived-pop 0.9s ease-out;
+}
+@keyframes ff-arrived-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  20%  { opacity: 1; transform: scale(1.1); }
+  60%  { opacity: 1; transform: scale(1.0); }
+  100% { opacity: 0; transform: scale(1.0); }
+}
+
+.ff-touch-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: clamp(11px, 2.4vw, 14px);
+  z-index: 30;
+  pointer-events: none;
+  animation: ff-hint-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ff-hint-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1.0; }
+}
+
+/* ===== DRIVE phase ===== */
+.ff-road {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #444;
+}
+
+.ff-road-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to right,
+      #2a2a2a 0%,
+      #2a2a2a 6%,
+      #444 6%,
+      #444 38%,
+      #555 38%,
+      #555 39%,
+      #444 39%,
+      #444 61%,
+      #555 61%,
+      #555 62%,
+      #444 62%,
+      #444 94%,
+      #2a2a2a 94%,
+      #2a2a2a 100%
+    );
+}
+/* Animated lane dashes */
+.ff-road-bg::before,
+.ff-road-bg::after {
+  content: '';
+  position: absolute;
+  top: -200%;
+  bottom: 0;
+  width: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #ffd966 0px,
+    #ffd966 24px,
+    transparent 24px,
+    transparent 60px
+  );
+  animation: ff-lane-scroll 0.6s linear infinite;
+}
+.ff-road-bg::before { left: 38%; }
+.ff-road-bg::after  { left: 62%; }
+@keyframes ff-lane-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(60px); }
+}
+
+/* Obstacle world is a tall strip we translate by -progress each frame.
+   Inline `transform: translateY(N)` is set by JS each frame. */
+.ff-road-world {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  pointer-events: none;
+  transform: translateY(0);
+}
+
+.ff-obstacle {
+  position: absolute;
+  width: 70px;
+  height: 100px;
+  pointer-events: none;
+}
+
+.ff-truck {
+  position: absolute;
+  bottom: 70px;
+  width: 80px;
+  height: 120px;
+  z-index: 10;
+  transition: left 0.15s ease-out;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* Progress bar */
+.ff-progress {
+  position: absolute;
+  top: 38px;
+  left: 16px;
+  right: 16px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  z-index: 25;
+}
+.ff-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffd966 0%, #ff8a30 100%);
+  transition: width 0.1s linear;
+}
+
+.ff-crash-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 50, 30, 0.55);
+  z-index: 50;
+  animation: ff-crash 0.7s ease-out;
+  pointer-events: none;
+}
+@keyframes ff-crash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ===== SPRAY phase ===== */
+.ff-spray-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.ff-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 20%, #884a2a 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 15%, #6a2a18 0%, transparent 60%),
+    linear-gradient(180deg, #4a2a18 0%, #2a1a10 50%, #1a1208 100%);
+}
+
+.ff-spray-building {
+  position: absolute;
+  left: 20%;
+  right: 6%;
+  top: 12%;
+  bottom: 14%;
+}
+
+.ff-spray-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14%;
+  background:
+    linear-gradient(180deg, #3a3a3a 0%, #1f1f1f 100%);
+  border-top: 3px solid #555;
+}
+
+.ff-parked-truck {
+  position: absolute;
+  left: 2%;
+  bottom: 12%;
+  width: 140px;
+  height: 90px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* The firefighter is positioned by JS each frame via `left: <px>`. He stands
+   on the ground; bottom anchors him to the ground band. */
+.ff-firefighter {
+  position: absolute;
+  bottom: 12%;
+  width: 80px;
+  height: 140px;
+  z-index: 10;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4));
+  touch-action: none;
+  cursor: grab;
+}
+.ff-firefighter:active { cursor: grabbing; }
+
+/* Legs are SVG <g> elements; force their transform-origin to the top of their
+   own bounding box (the hip) instead of the SVG viewport (0,0). */
+.ff-firefighter .ff-leg {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+}
+
+/* When the user is dragging him, his legs pump in an exaggerated way. */
+.ff-firefighter.walking .ff-leg-l {
+  animation: ff-leg-l-pump 0.28s ease-in-out infinite;
+}
+.ff-firefighter.walking .ff-leg-r {
+  animation: ff-leg-r-pump 0.28s ease-in-out infinite;
+}
+@keyframes ff-leg-l-pump {
+  0%, 100% { transform: rotate(-40deg) translateY(-4px); }
+  50%      { transform: rotate( 40deg) translateY( 0px); }
+}
+@keyframes ff-leg-r-pump {
+  0%, 100% { transform: rotate( 40deg) translateY( 0px); }
+  50%      { transform: rotate(-40deg) translateY(-4px); }
+}
+
+/* Whole-body bob while walking — adds to the goofiness */
+.ff-firefighter.walking {
+  animation: ff-bob 0.28s ease-in-out infinite;
+}
+@keyframes ff-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-4px) rotate(2deg); }
+}
+
+/* Flames host overlays the building precisely */
+.ff-flames {
+  position: absolute;
+  left: 20%;
+  right: 6%;
+  top: 12%;
+  bottom: 14%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.ff-flame {
+  position: absolute;
+  width: 14%;
+  aspect-ratio: 3 / 4;
+  transform: translate(-50%, -50%);
+  animation: ff-flicker 0.25s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px #ff8830);
+}
+@keyframes ff-flicker {
+  from { filter: drop-shadow(0 0 6px #ff8830); }
+  to   { filter: drop-shadow(0 0 14px #ffd966); }
+}
+
+.ff-flame-out {
+  animation: none;
+  filter: none;
+}
+.ff-smoke {
+  font-size: 36px;
+  animation: ff-smoke-rise 0.6s ease-out forwards;
+  opacity: 0.9;
+}
+@keyframes ff-smoke-rise {
+  from { transform: translateY(0) scale(1); opacity: 0.9; }
+  to   { transform: translateY(-40px) scale(1.4); opacity: 0; }
+}
+
+/* Hose water jet */
+.ff-hose-jet {
+  position: absolute;
+  height: 14px;
+  background:
+    linear-gradient(90deg,
+      rgba(160, 220, 255, 0.95) 0%,
+      rgba(120, 200, 250, 0.85) 60%,
+      rgba(80, 180, 240, 0.0) 100%);
+  border-radius: 8px;
+  transform-origin: 0 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9;
+  filter: drop-shadow(0 0 4px rgba(180, 230, 255, 0.7));
+}
+
+/* Make sure built-in win-overlay + star-burst sit above our stage */
+.ff-stage + .win-overlay {
+  /* defensive — main stylesheet already positions it fixed/absolute */
+}
